@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/provider/authProvider.dart';
-import 'package:frontend/router/router.dart';
+import 'package:frontend/view/splash_view/splash_view.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend/controller/auth.dart';
+import 'package:frontend/provider/auth_provider.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        // Add other providers
-      ],
+    return ChangeNotifierProvider(
+      create: (_) => AuthProvider(AuthService()),
       child: MaterialApp(
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/signup',
+        title: 'Project Management App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: SplashScreen(),
       ),
-    ),
     );
   }
 }
-

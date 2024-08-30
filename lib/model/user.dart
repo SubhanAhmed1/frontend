@@ -1,14 +1,17 @@
 class User {
   final String id;
-  final String name;
+  final String username;
   final String email;
-  final String password;
-  final String role; // 'admin' or 'employee'
+  final String role;
 
-  User(
-      {required this.id,
-      required this.name,
-      required this.email,
-      required this.password,
-      required this.role});
+  User({required this.id, required this.username, required this.email, required this.role});
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['_id'],
+      username: json['username'],
+      email: json['email'],
+      role: json['role'],
+    );
+  }
 }

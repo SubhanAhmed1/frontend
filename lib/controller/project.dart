@@ -1,61 +1,74 @@
-import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:frontend/model/project.dart';
+import 'package:http/http.dart' as http;
 
-class ProjectController {
-  final Dio _dio = Dio();
+class ProjectService {
+  final String baseUrl = "http://your-api-url/api/v1/users/project";
 
-  Future<void> createProject(String title, String description, List<String> assignedEmployees) async {
-    try {
-      final response = await _dio.post(
-        'http://your-backend-url.com/api/projects',
-        data: {
-          'title': title,
-          'description': description,
-          'assignedEmployees': assignedEmployees,
-        },
-      );
-      print(response.data['message']);
-    } catch (e) {
-      print('Error creating project: $e');
+  // Fetch all projects
+  Future<List<Project>> fetchProjects(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['projects'] as List;
+      return data.map((project) => Project.fromJson(project)).toList();
     }
+    return [];
   }
 
-  Future<void> getProjects() async {
-    try {
-      final response = await _dio.get('http://your-backend-url.com/api/projects');
-      print(response.data['projects']);
-    } catch (e) {
-      print('Error getting projects: $e');
+  // Create a new project
+  Future<Project?> createProject(String title, String description, List<String> assignedEmployeeIds, String token) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'title': title,
+        'description': description,
+        'assignedEmployees': assignedEmployeeIds,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body)['project'];
+      return Project.fromJson(data);
     }
+    return null;
   }
 
-  Future<void> getProjectById(String projectId) async {
-    try {
-      final response = await _dio.get('http://your-backend-url.com/api/projects/$projectId');
-      print(response.data['project']);
-    } catch (e) {
-      print('Error getting project: $e');
+  // Edit an existing project
+  Future<Project?> editProject(String id, String newTitle, String newDescription, List<String> newAssignedEmployeeIds, String token) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'title': newTitle,
+        'description': newDescription,
+        'assignedEmployees': newAssignedEmployeeIds,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['project'];
+      return Project.fromJson(data);
     }
+    return null;
   }
 
-  Future<void> updateProject(String projectId, Map<String, dynamic> updateData) async {
-    try {
-      final response = await _dio.put(
-        'http://your-backend-url.com/api/projects/$projectId',
-        data: updateData,
-      );
-      print(response.data['message']);
-    } catch (e) {
-      print('Error updating project: $e');
-    }
-  }
+  // Delete a project
+  Future<bool> deleteProject(String id, String token) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
-  Future<void> deleteProject(String projectId) async {
-    try {
-      final response = await _dio.delete('http://your-backend-url.com/api/projects/$projectId');
-      print(response.data['message']);
-    } catch (e) {
-      print('Error deleting project: $e');
-    }
+    return response.statusCode == 204;
   }
 }
